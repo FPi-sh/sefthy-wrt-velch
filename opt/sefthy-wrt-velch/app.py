@@ -2,16 +2,11 @@ import requests
 import subprocess
 import tempfile
 import os
-import sqlite3
 from time import sleep
 
-conn = sqlite3.connect('/opt/sefthy-wrt-gui/app.db')
-cursor = conn.cursor()
-cursor.execute("SELECT token FROM config")
-TOKEN = cursor.fetchone()[0]
-cursor.execute("SELECT version FROM version")
-VERSION = cursor.fetchone()[0]
-conn.close()
+
+TOKEN = subprocess.run(["uci", "-q", "get", "sefthy.config.token"], capture_output=True, text=True, check=True)
+VERSION = subprocess.run(["uci", "-q", "get", "sefthy.version.version"], capture_output=True, text=True, check=True)
 
 URL = "console.sefthy.cloud"
 CONNECTOR_TYPE = "openwrt"
@@ -84,13 +79,10 @@ while True:
 
                     if proc.returncode == 0:
                         try:
-                            conn = sqlite3.connect('/opt/sefthy-pbs-gui/app.db')
-                            cursor = conn.cursor()
-                            cursor.execute("UPDATE version SET version = ?", (targetVersion,))
-                            conn.commit()
-                            conn.close()
+                            versionupdate = subprocess.run(f'uci set sefthy.version.version="{targetVersion}" && uci commit sefthy', shell=True, capture_output=True)
                         except Exception as e:
-                            print("Error updating DB:", e)
+                            print("Error:", e)
+                            print({versionupdate})
                         requests.post(f"https://{URL}/cc84a0df-dbeb-4440-a68a-86b4f699cb06/send-message",
                                       headers={"Authorization": TOKEN},
                                       json={"message": f"Connector updated to version {targetVersion}",
