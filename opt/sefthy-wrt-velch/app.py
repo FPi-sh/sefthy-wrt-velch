@@ -5,8 +5,8 @@ import os
 from time import sleep
 
 
-TOKEN = subprocess.run(["uci", "-q", "get", "sefthy.config.token"], capture_output=True, text=True, check=True)
-VERSION = subprocess.run(["uci", "-q", "get", "sefthy.version.version"], capture_output=True, text=True, check=True)
+TOKEN = subprocess.run(["uci", "-q", "get", "sefthy.config.token"], capture_output=True, text=True, check=True).stdout.strip()
+VERSION = subprocess.run(["uci", "-q", "get", "sefthy.version.version"], capture_output=True, text=True, check=True).stdout.strip()
 
 URL = "console.sefthy.cloud"
 CONNECTOR_TYPE = "openwrt"
